@@ -405,7 +405,7 @@
     let currentInstanceName = '';
     let connected = false;
     
-    const CONNECTION_POLL_INTERVAL = 5000;
+    const CONNECTION_POLL_INTERVAL = 45000;
     const MAX_POLL_ATTEMPTS = 36;
 
     // Elementos DOM
@@ -642,9 +642,10 @@
           if (!connected) setConnectionMessage('Tempo limite atingido. Tente gerar novamente.', 'error');
           return;
         }
-        await fetchAndDisplayQRCode(currentInstanceName);
+        await checkInstanceConnection(currentInstanceName);
       }, CONNECTION_POLL_INTERVAL);
       
+      els.timer.style.display = 'flex';
       timerInterval = setInterval(updateTimer, 1000);
       updateTimer();
     }
