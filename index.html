@@ -634,29 +634,28 @@
       timeLeft = 45;
       connectionAttempts = 0;
       els.stopBtn.style.display = 'block';
-      
-      connectionInterval = setInterval(async () => {
-        connectionAttempts++;
-        if (connected || connectionAttempts > MAX_POLL_ATTEMPTS) {
-          stopConnectionPolling();
-          if (!connected) setConnectionMessage('Tempo limite atingido. Tente gerar novamente.', 'error');
-          return;
-        }
-        await checkInstanceConnection(currentInstanceName);
-      }, CONNECTION_POLL_INTERVAL);
-      
       els.timer.style.display = 'flex';
       timerInterval = setInterval(updateTimer, 1000);
       updateTimer();
     }
 
-    function updateTimer() {
+    async function updateTimer() {
       if (connected) {
         els.timer.style.display = 'none';
         return;
       }
-      els.timer.innerHTML = `<span class="status-indicator waiting"></span>Próxima atualização em: ${timeLeft}s`;
-      timeLeft = timeLeft === 0 ? 45 : timeLeft - 1;
+      if (timeLeft === 0) {
+        connectionAttempts++;
+        if (connectionAttempts > MAX_POLL_ATTEMPTS) {
+          stopConnectionPolling();
+          setConnectionMessage('Tempo limite atingido. Tente gerar novamente.', 'error');
+          return;
+        }
+        await checkInstanceConnection(currentInstanceName);
+        timeLeft = 45;
+      }
+      els.timer.innerHTML = `<span class="status-indicator waiting"></span>Próxima verificação em: ${timeLeft}s`;
+      timeLeft -= 1;
     }
 
     function parseConnectionMessage(data) {
