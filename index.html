@@ -5,72 +5,423 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Gerador de QR Code - SaaS</title>
   <link rel="icon" type="image/png" href="https://github.com/bindvalue/images/blob/main/Artboard10@4x.png?raw=true">
-  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    :root {
+      --vh: 1vh;
+      --primary-color: #0a84ff;
+      --primary-hover: #0071f3;
+      --bg-dark: #07080b;
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f5f5f7;
+      --text-muted: rgba(255, 255, 255, 0.74);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: calc(var(--vh, 1vh) * 100);
+      background: radial-gradient(circle at top, rgba(10, 132, 255, 0.08), transparent 40%),
+                  linear-gradient(180deg, var(--bg-dark) 0%, #0f1116 45%, #13171f 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+      color: var(--text-main);
+    }
+
+    .container {
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      background: rgba(20, 24, 33, 0.85);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 1000px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+      position: relative;
+      border: 1px solid var(--card-border);
+      margin: auto;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .logo-container img {
+      max-width: 180px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .hero-copy h1 {
+      font-size: clamp(24px, 5vw, 32px);
+      line-height: 1.2;
+      margin-bottom: 8px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+      font-size: clamp(14px, 3vw, 16px);
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 500px;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .initial-instructions {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .initial-instructions .icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .initial-instructions ol {
+      margin-top: 8px;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      color: var(--text-main);
+      font-size: 16px;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.15);
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary-color);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 16px rgba(10, 132, 255, 0.2);
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 20px rgba(10, 132, 255, 0.3);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.4);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .secondary-button {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      box-shadow: none;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .secondary-button:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: none;
+    }
+
+    .status-message {
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 20px;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-indicator.generating { background-color: #3498db; animation: pulse 1.5s infinite; }
+    .status-indicator.waiting { background-color: #f1c40f; animation: pulse 1.5s infinite; }
+    .status-indicator.connected { background-color: #2ecc71; }
+    .status-indicator.error { background-color: #e74c3c; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    }
+
+    .qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+    }
+
+    #qrcode {
+      width: 100%;
+      height: 100%;
+      min-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      position: relative;
+    }
+
+    #qrcode.empty {
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--text-muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #qrcode img {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 12px;
+      background: white;
+      padding: 16px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Estilo do Loader Adicionado */
+    .loader {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s ease-in-out infinite;
+      position: absolute;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #timer {
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--primary-color);
+      background: rgba(10, 132, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Responsividade */
+    @media (min-width: 768px) {
+      .content-layout {
+        grid-template-columns: 1fr 1fr;
+        align-items: stretch;
+      }
+      .qr-card {
+        height: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 24px 16px;
+        border-radius: 20px;
+      }
+      .card {
+        padding: 16px;
+      }
+      #qrcode img {
+        padding: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo-container">
-      <img src="https://raw.githubusercontent.com/bindvalue/website/refs/heads/main/images/Artboard%201_9logo-branca.png" alt="Logo bindvalue" />
+  <main class="container" role="main">
+    <header class="hero">
+      <div class="logo-container">
+        <img src="https://raw.githubusercontent.com/bindvalue/website/refs/heads/main/images/Artboard%201_9logo-branca.png" alt="Logo Bindvalue" />
+      </div>
+      <div class="hero-copy">
+        <h1>Gerador de QR Code</h1>
+        <p class="subtitle">Crie e sincronize QR Codes para suas instâncias Evolution API de forma rápida e segura.</p>
+      </div>
+    </header>
+
+    <div class="content-layout">
+      <!-- Painel Principal (Formulário) -->
+      <div class="primary-panel">
+        <section class="card instructions-card" id="initialInstructions">
+          <div class="initial-instructions">
+            <span class="icon">💡</span>
+            <div>
+              <strong>Como conectar:</strong>
+              <ol>
+                <li>Digite o nome exato da sua instância.</li>
+                <li>Clique em "Gerar QR Code".</li>
+                <li>Abra o WhatsApp e escaneie o código gerado.</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <section class="card form-card">
+          <div class="input-group">
+            <label for="instanceName">Nome da Instância</label>
+            <input type="text" id="instanceName" placeholder="Ex: minha-instancia-01" required autocomplete="off">
+          </div>
+
+          <button id="generateButton" type="button" onclick="generateQRCode()">
+            <span class="status-indicator generating" id="statusIndicator" style="display: none;"></span>
+            <span id="buttonText">Gerar QR Code</span>
+          </button>
+
+          <button id="stopButton" class="secondary-button" onclick="stopQRCodePolling()" type="button">Cancelar Geração</button>
+
+          <div id="connectionStatus" class="status-message" role="status" aria-live="polite">
+            <span class="status-indicator waiting" id="connectionIndicator" style="display: none;"></span>
+            <span id="connectionMessageText">Aguardando preenchimento...</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Painel do QR Code -->
+      <section class="card qr-card" id="qrSection">
+        <div id="qrcode" class="empty" aria-live="polite">
+          <div id="loader" class="loader"></div>
+          <span id="qrPlaceholder">O QR Code aparecerá aqui</span>
+        </div>
+        <div id="timer" style="display: none;"></div>
+      </section>
     </div>
-    <h1>Gerador de QR Code</h1>
-    <p class="subtitle">Crie QR Codes para suas instâncias Evolution API</p>
-    <div class="initial-instructions" id="initialInstructions">
-      <span class="icon">💡</span>
-      <strong>Como usar:</strong><br>
-      1. Digite o nome da sua instância<br>
-      2. Clique em "Gerar QR Code"<br>
-      3. Escaneie o código com seu WhatsApp<br>
-      4. Aguarde a sincronização automática
-    </div>
-    <div class="input-group">
-      <label for="instanceName">Nome da Instância</label>
-      <input type="text" id="instanceName" placeholder="Digite o nome da instância" required>
-    </div>
-    <button id="generateButton" onclick="generateQRCode()">
-      <span class="status-indicator generating" id="statusIndicator" style="display: none;"></span>
-      <span id="buttonText">Gerar QR Code</span>
-    </button>
-    <button id="stopButton" class="secondary-button" onclick="stopQRCodePolling()" type="button">Parar geração</button>
-    <div id="connectionStatus" class="status-message" aria-live="polite">
-      <span class="status-indicator waiting" id="connectionIndicator" style="display: none;"></span>
-      <span id="connectionMessageText">Pronto para gerar seu QR Code e verificar a conexão.</span>
-    </div>
-    <div id="loader" class="loader"></div>
-    <div class="qr-section" id="qrSection">
-      <div id="qrcode" class="empty">Gerando QR Code...</div>
-      <div id="timer" style="display: none;"></div>
-    </div>
-  </div>
+  </main>
 
   <script>
+    // Ajuste seguro de viewport para mobile
     function setViewportHeight() {
       let vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
-
     window.addEventListener('resize', setViewportHeight);
     setViewportHeight();
 
+    // Variáveis de Estado
     let timerInterval;
     let connectionInterval;
     let connectionAttempts = 0;
-    let timeLeft = 30;
+    let timeLeft = 45;
     let currentInstanceName = '';
-    let qrCodeGenerated = false;
     let connected = false;
+    
     const CONNECTION_POLL_INTERVAL = 5000;
     const MAX_POLL_ATTEMPTS = 36;
 
+    // Elementos DOM
+    const els = {
+      instanceName: document.getElementById('instanceName'),
+      generateBtn: document.getElementById('generateButton'),
+      stopBtn: document.getElementById('stopButton'),
+      statusIndicator: document.getElementById('statusIndicator'),
+      buttonText: document.getElementById('buttonText'),
+      connIndicator: document.getElementById('connectionIndicator'),
+      connText: document.getElementById('connectionMessageText'),
+      qrContainer: document.getElementById('qrcode'),
+      qrPlaceholder: document.getElementById('qrPlaceholder'),
+      loader: document.getElementById('loader'),
+      timer: document.getElementById('timer'),
+      instructions: document.getElementById('initialInstructions')
+    };
+
     function setConnectionMessage(text, type = 'waiting') {
-      const connectionIndicator = document.getElementById('connectionIndicator');
-      const connectionText = document.getElementById('connectionMessageText');
-      if (!connectionIndicator || !connectionText) {
-        console.warn('Connection status elements not found in DOM.');
-        return;
-      }
-      connectionIndicator.style.display = 'inline-block';
-      connectionIndicator.className = `status-indicator ${type}`;
-      connectionText.textContent = text;
+      els.connIndicator.style.display = 'inline-block';
+      els.connIndicator.className = `status-indicator ${type}`;
+      els.connText.textContent = text;
     }
 
     function resetConnectionState() {
@@ -78,9 +429,9 @@
       connectionAttempts = 0;
       clearInterval(connectionInterval);
       clearInterval(timerInterval);
-      timeLeft = 30;
-      document.getElementById('timer').style.display = 'none';
-      toggleStopButton(false);
+      timeLeft = 45;
+      els.timer.style.display = 'none';
+      els.stopBtn.style.display = 'none';
       setConnectionMessage('Preparando chamada ao webhook...', 'waiting');
       updateStatus('generating');
     }
@@ -88,113 +439,133 @@
     function stopConnectionPolling() {
       clearInterval(connectionInterval);
       clearInterval(timerInterval);
-      document.getElementById('timer').style.display = 'none';
-      toggleStopButton(false);
-    }
-
-    function toggleStopButton(show) {
-      const stopButton = document.getElementById('stopButton');
-      if (!stopButton) return;
-      stopButton.style.display = show ? 'flex' : 'none';
+      els.timer.style.display = 'none';
+      els.stopBtn.style.display = 'none';
     }
 
     function stopQRCodePolling() {
       stopConnectionPolling();
       updateStatus('regenerate');
-      setConnectionMessage('Geração de QR code interrompida pelo usuário.', 'error');
-      document.getElementById('generateButton').disabled = false;
+      setConnectionMessage('Geração interrompida pelo usuário.', 'error');
+      els.generateBtn.disabled = false;
+      resetQRContainer();
     }
 
-    function hideQRCodeSection() {
-      const qrSection = document.getElementById('qrSection');
-      if (qrSection) {
-        qrSection.classList.remove('show');
-        qrSection.style.display = 'none';
-      }
+    function resetQRContainer() {
+      els.qrContainer.innerHTML = '';
+      els.qrContainer.appendChild(els.loader);
+      els.qrContainer.appendChild(els.qrPlaceholder);
+      els.qrContainer.classList.add('empty');
+      els.qrPlaceholder.textContent = 'Geração cancelada';
+      els.qrPlaceholder.style.display = 'block';
     }
 
     function connectionSuccess(message) {
       connected = true;
       stopConnectionPolling();
       updateStatus('connected');
-      document.getElementById('generateButton').disabled = false;
+      els.generateBtn.disabled = false;
       setConnectionMessage(message || 'Sua instância foi conectada com sucesso.', 'connected');
-      toggleStopButton(false);
-      setTimeout(hideQRCodeSection, 1000);
-    }
-
-    function showQRSection() {
-      document.getElementById('initialInstructions').style.display = 'none';
-      const qrSection = document.getElementById('qrSection');
-      if (qrSection) {
-        qrSection.style.display = 'block';
-        qrSection.classList.add('show');
-      }
-      qrCodeGenerated = true;
+      els.stopBtn.style.display = 'none';
     }
 
     function updateStatus(status) {
-      const statusIndicator = document.getElementById('statusIndicator');
-      const buttonText = document.getElementById('buttonText');
-      statusIndicator.style.display = 'inline-block';
-      if (status === 'generating') {
-        statusIndicator.className = 'status-indicator generating';
-        buttonText.textContent = 'Gerando QR Code...';
-      } else if (status === 'waiting') {
-        statusIndicator.className = 'status-indicator waiting';
-        buttonText.textContent = 'Aguardando Sincronização';
-      } else if (status === 'connected') {
-        statusIndicator.className = 'status-indicator connected';
-        buttonText.textContent = 'Conectado';
-      } else if (status === 'regenerate') {
-        statusIndicator.style.display = 'none';
-        buttonText.textContent = 'Gerar Novo QR Code';
-      } else {
-        statusIndicator.style.display = 'none';
-        buttonText.textContent = 'Gerar QR Code';
+      els.statusIndicator.style.display = 'inline-block';
+      
+      switch(status) {
+        case 'generating':
+          els.statusIndicator.className = 'status-indicator generating';
+          els.buttonText.textContent = 'Gerando QR Code...';
+          break;
+        case 'waiting':
+          els.statusIndicator.className = 'status-indicator waiting';
+          els.buttonText.textContent = 'Aguardando Sincronização';
+          break;
+        case 'connected':
+          els.statusIndicator.className = 'status-indicator connected';
+          els.buttonText.textContent = 'Conectado com Sucesso';
+          break;
+        case 'regenerate':
+          els.statusIndicator.style.display = 'none';
+          els.buttonText.textContent = 'Tentar Novamente';
+          break;
+        default:
+          els.statusIndicator.style.display = 'none';
+          els.buttonText.textContent = 'Gerar QR Code';
       }
     }
 
-    async function generateQRCode() {
-      const instanceName = document.getElementById('instanceName').value.trim();
-      if (!instanceName) {
-        setConnectionMessage('Por favor, insira o nome da instância para continuar.', 'error');
-        return;
-      }
-      if (instanceName.length < 3) {
-        setConnectionMessage('O nome da instância deve ter pelo menos 3 caracteres.', 'error');
-        return;
-      }
-      currentInstanceName = instanceName;
-      if (!qrCodeGenerated) showQRSection();
-      resetConnectionState();
-      await fetchAndDisplayQRCode(instanceName, true);
-      if (!connected) {
-        startConnectionPolling();
-      }
-    }
-
-    async function fetchAndDisplayQRCode(instanceName, isInitial = false) {
-      const loader = document.getElementById('loader');
-      const generateButton = document.getElementById('generateButton');
-      const qrcodeElement = document.getElementById('qrcode');
-      updateStatus(isInitial ? 'generating' : 'waiting');
-      loader.style.display = 'block';
-      generateButton.disabled = true;
-      if (isInitial || !qrcodeElement.querySelector('img')) {
-        qrcodeElement.textContent = 'Gerando QR Code...';
-        qrcodeElement.classList.add('empty');
-      }
+    async function checkInstanceConnection(instanceName) {
+      const endpoint = 'https://n8n.bindvalue.com.br/webhook/status-instancia-evolution';
       try {
-        const endpoint = isInitial
-          ? 'https://n8n.bindvalue.com.br/webhook/criar-instancia-evolution'
-          : 'https://n8n.bindvalue.com.br/webhook/atualizar-qr-code';
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ instanceName })
         });
-        if (!response.ok) throw new Error(`Erro ${response.status}: ${response.statusText}`);
+
+        if (!response.ok) throw new Error(`Erro ${response.status}`);
+        const data = await response.json();
+        
+        if (parseConnectionMessage(data)) {
+          connectionSuccess(data.message || data.status || `Instância "${instanceName}" já conectada.`);
+          return true;
+        }
+
+        if (data.error || data.status === 'not_found') {
+          setConnectionMessage(data.error || `A instância "${instanceName}" não foi encontrada.`, 'error');
+        } else {
+          setConnectionMessage('Instância localizada. Gerando QR Code...', 'waiting');
+        }
+        return false;
+      } catch (error) {
+        setConnectionMessage(`Falha ao consultar status: ${error.message}`, 'error');
+        return false;
+      }
+    }
+
+    async function generateQRCode() {
+      const instanceName = els.instanceName.value.trim();
+      
+      if (instanceName.length < 3) {
+        setConnectionMessage('O nome da instância deve ter no mínimo 3 caracteres.', 'error');
+        els.instanceName.focus();
+        return;
+      }
+      
+      currentInstanceName = instanceName;
+      resetConnectionState();
+      updateStatus('generating');
+      setConnectionMessage('Verificando status atual da instância...', 'waiting');
+      
+      // Recolhe instruções visuais para focar no QR
+      if(window.innerWidth < 768) els.instructions.style.display = 'none';
+
+      const alreadyConnected = await checkInstanceConnection(instanceName);
+      if (alreadyConnected) return;
+
+      await fetchAndDisplayQRCode(instanceName, true);
+      if (!connected) startConnectionPolling();
+    }
+
+    async function fetchAndDisplayQRCode(instanceName, isInitial = false) {
+      updateStatus(isInitial ? 'generating' : 'waiting');
+      els.loader.style.display = 'block';
+      els.qrPlaceholder.style.display = 'none';
+      els.generateBtn.disabled = true;
+
+      try {
+        const endpoint = isInitial
+          ? 'https://n8n.bindvalue.com.br/webhook/criar-instancia-evolution'
+          : 'https://n8n.bindvalue.com.br/webhook/atualizar-qr-code';
+          
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instanceName })
+        });
+        
+        if (!response.ok) throw new Error(`Erro no Servidor (${response.status})`);
 
         const contentType = response.headers.get('content-type') || '';
         let imgSrc = null;
@@ -202,100 +573,83 @@
 
         if (contentType.includes('application/json')) {
           const responseText = await response.text();
-          if (responseText.trim()) {
-            try {
-              statusData = JSON.parse(responseText);
-            } catch (jsonError) {
-              throw new Error('Resposta JSON inválida do webhook.');
-            }
-          }
+          if (responseText.trim()) statusData = JSON.parse(responseText);
 
-          if (statusData.qrCodeBase64) {
-            imgSrc = `data:image/png;base64,${statusData.qrCodeBase64}`;
-          } else if (statusData.qrCodeUrl) {
-            imgSrc = statusData.qrCodeUrl;
-          } else if (statusData.error) {
-            throw new Error(statusData.error);
-          } else if (isInitial) {
-            throw new Error('QR Code não recebido na resposta');
-          }
+          if (statusData.qrCodeBase64) imgSrc = `data:image/png;base64,${statusData.qrCodeBase64}`;
+          else if (statusData.qrCodeUrl) imgSrc = statusData.qrCodeUrl;
+          else if (statusData.error) throw new Error(statusData.error);
+          else if (isInitial) throw new Error('QR Code não retornado.');
         } else {
           const blob = await response.blob();
-          if (blob.size > 0) {
-            imgSrc = URL.createObjectURL(blob);
-          }
+          if (blob.size > 0) imgSrc = URL.createObjectURL(blob);
         }
 
         if (imgSrc) {
-          qrcodeElement.innerHTML = `<img src="${imgSrc}" alt="QR Code para ${instanceName}" class="slide-in">`;
-          qrcodeElement.classList.remove('empty');
-        } else if (isInitial && !qrcodeElement.querySelector('img')) {
-          throw new Error('QR Code não foi retornado pelo webhook.');
+          // Limpa tudo menos o loader e injeta a imagem
+          els.qrContainer.innerHTML = '';
+          els.qrContainer.appendChild(els.loader);
+          
+          const img = document.createElement('img');
+          img.src = imgSrc;
+          img.alt = `QR Code para ${instanceName}`;
+          els.qrContainer.appendChild(img);
+          els.qrContainer.classList.remove('empty');
         }
 
-        const isConnected = parseConnectionMessage(statusData);
-
-        if (isConnected) {
-          const successText = statusData.message || statusData.status || statusData.state || `Instância "${instanceName}" conectada com sucesso.`;
-          connectionSuccess(successText);
+        if (parseConnectionMessage(statusData)) {
+          connectionSuccess(`Instância "${instanceName}" conectada com sucesso.`);
           return;
         }
 
         if (isInitial) {
-          setConnectionMessage(`QR Code criado com sucesso para a instância "${instanceName}". Escaneie com seu WhatsApp para conectar.`, 'waiting');
+          setConnectionMessage(`QR Code gerado! Escaneie no seu WhatsApp.`, 'waiting');
         }
 
         if (!connected) {
           updateStatus('waiting');
-          document.getElementById('timer').style.display = 'block';
-          setConnectionMessage('Aguardando conexão. O sistema verificará automaticamente em instantes.', 'waiting');
+          els.timer.style.display = 'flex';
         }
+        
       } catch (error) {
-        console.error('Erro ao gerar QR code:', error);
-        if (!qrcodeElement.querySelector('img')) {
-          qrcodeElement.textContent = 'Erro ao carregar QR Code. Tente novamente.';
-          qrcodeElement.classList.add('empty');
-        }
+        console.error(error);
         updateStatus('regenerate');
-        setConnectionMessage(`Erro: ${error.message}. Verifique o webhook ou tente novamente.`, 'error');
+        setConnectionMessage(`Falha na geração: ${error.message}`, 'error');
+        resetQRContainer();
+        els.qrPlaceholder.textContent = 'Erro ao carregar. Tente novamente.';
       } finally {
-        loader.style.display = 'none';
-        generateButton.disabled = connected;
+        els.loader.style.display = 'none';
+        els.generateBtn.disabled = connected;
       }
     }
 
     function startConnectionPolling() {
       clearInterval(connectionInterval);
       clearInterval(timerInterval);
-      timeLeft = 30;
+      timeLeft = 45;
       connectionAttempts = 0;
-      toggleStopButton(true);
+      els.stopBtn.style.display = 'block';
+      
       connectionInterval = setInterval(async () => {
-        connectionAttempts += 1;
+        connectionAttempts++;
         if (connected || connectionAttempts > MAX_POLL_ATTEMPTS) {
           stopConnectionPolling();
-          if (!connected) {
-            setConnectionMessage('Não foi possível confirmar a conexão. Tente novamente mais tarde.', 'error');
-          }
+          if (!connected) setConnectionMessage('Tempo limite atingido. Tente gerar novamente.', 'error');
           return;
         }
         await fetchAndDisplayQRCode(currentInstanceName);
       }, CONNECTION_POLL_INTERVAL);
+      
       timerInterval = setInterval(updateTimer, 1000);
+      updateTimer();
     }
 
     function updateTimer() {
-      const timerElement = document.getElementById('timer');
       if (connected) {
-        timerElement.style.display = 'none';
+        els.timer.style.display = 'none';
         return;
       }
-      timerElement.innerHTML = `<span class="status-indicator waiting"></span>Próxima verificação em: ${timeLeft}s`;
-      if (timeLeft === 0) {
-        timeLeft = 30;
-      } else {
-        timeLeft--;
-      }
+      els.timer.innerHTML = `<span class="status-indicator waiting"></span>Próxima atualização em: ${timeLeft}s`;
+      timeLeft = timeLeft === 0 ? 45 : timeLeft - 1;
     }
 
     function parseConnectionMessage(data) {
@@ -305,33 +659,12 @@
         || String(data?.message || '').toLowerCase().includes('conectado');
     }
 
-    async function updateQRCode() {
-      if (currentInstanceName && !connected) await fetchAndDisplayQRCode(currentInstanceName);
-    }
-
-    document.getElementById('instanceName').addEventListener('keypress', function(e) {
+    // Event Listeners
+    els.instanceName.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') generateQRCode();
     });
-
-    if (window.matchMedia('(hover: hover)').matches) {
-      document.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', function(e) {
-          const ripple = document.createElement('span');
-          const rect = this.getBoundingClientRect();
-          const size = Math.max(rect.width, rect.height);
-          const x = e.clientX - rect.left - size / 2;
-          const y = e.clientY - rect.top - size / 2;
-          ripple.style.width = ripple.style.height = size + 'px';
-          ripple.style.left = x + 'px';
-          ripple.style.top = y + 'px';
-          ripple.classList.add('ripple');
-          this.appendChild(ripple);
-          setTimeout(() => ripple.remove(), 600);
-        });
-      });
-    }
-
-    window.addEventListener('load', () => document.getElementById('instanceName').focus());
+    
+    window.addEventListener('load', () => els.instanceName.focus());
   </script>
 </body>
 </html>
